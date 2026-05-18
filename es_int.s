@@ -225,17 +225,20 @@ TRSBDES:
 
 RECA:
         MOVE.B RBA,D1
-        MOVE.B #0,D0
-        BSR ESCCAR
-        BEQ FINRTI
-        BRA FINRTI
+        MOVE.L #0,D0
+        BSR  ESCCAR
+        CMP.L #-1,D0
+        BEQ FINRTI                          
+        BRA BRT1
+                
 
 RECB:
         MOVE.B RBB,D1
-        MOVE.B #1,D0
-        BSR ESCCAR
-        BEQ FINRTI
-        BRA FINRTI
+        MOVE.L #0,D0
+        BSR  ESCCAR
+        CMP.L #-1,D0
+        BEQ FINRTI                          
+        BRA BRT1
 
 
 
