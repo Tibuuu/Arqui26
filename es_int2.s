@@ -32,11 +32,6 @@ IMR_COPIA DS.B 1  *Enunciado pide guardarle por si acaso
 HUECO DS.B 1      *Para dejar las direcciones pares
 
 
-
-
-
-
-
 *Código principal:
 *Init tener en cuenta $40 número vector int y $100 dir tabla dfe vectores
 INIT:
@@ -190,8 +185,6 @@ ERPRINT:
 
 RTI:
         MOVEM.L D0-D1,-(A7) *Apilo los registros que voy a guardarle
-	MOVE.W SR,-(A7)
-	ORI.W #$0700,SR
 BRT1:        
         MOVE.B ISR,D1   *Lem metop el ISR A D1
         AND.B IMR_COPIA,D1
@@ -232,7 +225,7 @@ TRSB:
         MOVE.B D0,TBB          *envio char por línea
         BRA BRT1
 TRSBDES:
-	BTST #0,IMR_COPIA
+	BTST #4,IMR_COPIA       
 	BEQ BRT1
         BCLR #4,IMR_COPIA
         MOVE.B IMR_COPIA,IMR
@@ -252,45 +245,62 @@ RECB:
         BRA BRT1
 
 FINRTI:
-	MOVE.W (A7)+,SR
         MOVEM.L (A7)+,D0-D1
         RTE
 
+PATRON: DC.B '1','2','3','4','5','6','7','8','9','0'
+BUFFER: DS.B 2000
 
-TAMANO EQU 3000
-DESA: EQU 0 * Descriptor línea A
-DESB: EQU 1 * Descriptor línea B
-BUFFER: DS.B TAMANO+1 * Buffer para lectura y escritura de caracteres
-PARDIR: DC.L 0 * Direcci´on que se pasa como par´ametro
 
 INICIO:
         MOVE.L #RTI,$100
         BSR INIT
-        MOVE.W #$2000,SR   * Fijo el tamaño a 2000 caracteres que se van a transmitir
-	LEA BUFFER,A0
-	MOVE.L #TAMANO-1,D0
-	MOVE.B #'A',D1       * El char con el que voy a hacer la prueba
-B_LLEN:                * Hago el bucle
-	MOVE.B D1,(A0)+
-	DBRA D0,B_LLEN
-	
-	MOVE.W #TAMANO,-(A7)
-	MOVE.W #DESB,-(A7)
-	MOVE.L #BUFFER,-(A7)
-	BSR PRINT
-	ADD.L #8,A7
-	NOP
 
-        * Metemos 'hola' en el buffer de transmision de linea B directamente
-*        MOVE.W #3999,-(A7)        * tamaño = 3000
- *       MOVE.W #0,-(A7)        * descriptor linea B
-  *      MOVE.L #MSGHOLA,-(A7)  * buffer
-   *     BSR PRINT
-    *    ADD.L #8,A7
-     *   NOP                    * breakpoint aqui, D0 debe ser 4
+        LEA BUFFER,A0
+        LEA PATRON,A2
+        MOVE.L #999,D0
+        CLR.L D1
+BFILL:
+        MOVE.B (A2,D1),(A0)+
+        ADDQ.L #1,D1
+        CMP.L #10,D1
+        BNE CONT
+        CLR.L D1
+CONT:
+        DBRA D0,BFILL
+
+        MOVE.W #$2000,SR
+
+        * 4 llamadas de 100 bytes linea B
+        MOVE.W #100,-(A7)
+        MOVE.W #1,-(A7)
+        MOVE.L #BUFFER,-(A7)
+        BSR PRINT
+        ADD.L #8,A7
+        NOP                    * D0 debe ser 100
+
+        MOVE.W #100,-(A7)
+        MOVE.W #1,-(A7)
+        MOVE.L #BUFFER,-(A7)
+        BSR PRINT
+        ADD.L #8,A7
+        NOP                    * D0 debe ser 100
+
+        MOVE.W #100,-(A7)
+        MOVE.W #1,-(A7)
+        MOVE.L #BUFFER,-(A7)
+        BSR PRINT
+        ADD.L #8,A7
+        NOP                    * D0 debe ser 100
+
+        MOVE.W #100,-(A7)
+        MOVE.W #1,-(A7)
+        MOVE.L #BUFFER,-(A7)
+        BSR PRINT
+        ADD.L #8,A7
+        NOP                    * D0 debe ser 100
 
 OTRO:   BRA OTRO
-
 
 *MSGHOLA: DC.B '1','2','3','4','5','6','7','8'
  
